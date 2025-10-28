@@ -77,53 +77,128 @@ Ignoring the input sequences, auxiliary memory is dominated by the DP and backpo
 ### Comparison of Theoretical and Empirical Results - Unrestricted Alignment
 
 - Theoretical order of growth: **O(nm)**
-- Empirical order of growth (if different from theoretical):
+- Empirical order of growth (if different from theoretical): N/A
 
-![](fill-me-in.png)
+![img](./_analysis/align_empirical_unbounded.svg)
 
-_Fill me in_
+The empirical and observed match up almost perfectly.
 
 ## Core
 
 ### Design Experience
 
-_Fill me in_
+I worked with Brandon Monson and Porter Schollenberger to design a banded Needleman–Wunsch. We restrict DP to cells with `|i−j| ≤ d`, compute row-specific column bounds via `j_bounds`, and keep rolling arrays for costs and pointers while saving one backpointer slice per row for traceback. By hand, we walked a small example to verify band entry/exit and diagonal/left/up transitions. We chose arrays (lists) over dicts for cache-friendly scans across the band; the tradeoff is storing `O(n·d)` backpointers to enable simple traceback.
 
 ### Theoretical Analysis - Banded Alignment
 
 #### Time
 
-_Fill me in_
+```py
+n, m = len(seq1), len(seq2)
+d = max(n, m) if banded_width < 0 else banded_width                               #            sets band half-width d
+
+if banded_width >= 0 and abs(n - m) > banded_width:                               #            O(1): early reject when paths can't fit band
+    return inf, None, None
+
+# rolling rows over the band (width ≤ 2d+1)
+prev_cost = [0] * (2 * d + 1)                                                     #            O(d)
+curr_cost = [0] * (2 * d + 1)                                                     #            O(d)
+prev_ptr  = [""] * (2 * d + 1)                                                    #            O(d)
+curr_ptr  = [""] * (2 * d + 1)                                                    #            O(d)
+
+# initialize i = 0 row within band columns
+lo, hi = j_bounds(0, m, d)                                                        #            O(1)
+for j_offset, j in enumerate(range(lo, hi + 1)):                                   #            O(d): init banded first row
+    prev_cost[j_offset] = j * indel_penalty
+    prev_ptr[j_offset]  = "L" if j > 0 else ""
+
+backpointer_rows = [prev_ptr.copy()]                                              #            O(d)
+
+# fill DP within band
+for i in range(1, n + 1):                                                         #            n iterations
+    lo, hi = j_bounds(i, m, d)                                                    #            O(1)
+    prev_lo, prev_hi = j_bounds(i - 1, m, d)                                      #            O(1)
+    for j_offset, j in enumerate(range(lo, hi + 1)):                              #            O(d) cells per row → O(n·d)
+        candidates = []
+        if prev_lo <= j-1 <= prev_hi:                                             #            O(1)
+            diag_idx = (j - 1) - prev_lo
+            diagonal = prev_cost[diag_idx] + (match_award if seq1[i-1]==seq2[j-1]
+                                              else sub_penalty)                   #            O(1)
+            candidates.append((diagonal, 0, 'D'))
+        if j - 1 >= lo:                                                            #            O(1)
+            left = curr_cost[j_offset - 1] + indel_penalty
+            candidates.append((left, 1, "L"))
+        if prev_lo <= j <= prev_hi:                                                #            O(1)
+            up_idx = j - prev_lo
+            up = prev_cost[up_idx] + indel_penalty
+            candidates.append((up, 2, "U"))
+
+        min_cost, _, direction = min(candidates)                                   #            O(1)
+        curr_cost[j_offset] = min_cost
+        curr_ptr[j_offset]  = direction
+
+    backpointer_rows.append(curr_ptr.copy())                                       #            O(d) per row
+    prev_cost, curr_cost = curr_cost, [0] * (2 * d + 1)                            #            O(d)
+    prev_ptr,  curr_ptr  = curr_ptr,  [""] * (2 * d + 1)                           #            O(d)
+
+# traceback walks at most n+m steps, staying inside band
+i, j = n, m
+aligned1_list, aligned2_list = [], []
+while (i > 0 or j > 0):                                                            #            O(n+m)
+    lo, hi = j_bounds(i, m, d)                                                     #            O(1)
+    j_offset = j - lo                                                              #            O(1)
+    dch = backpointer_rows[i][j_offset]                                            #            O(1)
+    if dch == 'D': i -= 1; j -= 1
+    elif dch == 'L': j -= 1
+    else: i -= 1
+```
+
+Each of the `n` rows processes at most `~2d+1` cells, so the DP fill is **O(n·d)** (symmetrically **O(m·d)**; for `n≈m`, **O(n·d)**). Initialization is **O(d)** and traceback **O(n+m)**, which are lower-order compared to **O(n·d)**.
 
 #### Space
 
-_Fill me in_
+```py
+# rolling band rows
+prev_cost = [0] * (2 * d + 1)                                                     #            O(d)
+curr_cost = [0] * (2 * d + 1)                                                     #            O(d)
+prev_ptr  = [""] * (2 * d + 1)                                                    #            O(d)
+curr_ptr  = [""] * (2 * d + 1)                                                    #            O(d)
 
-### Empirical Data - Banded Alignment
+# store backpointers for each i to enable traceback
+backpointer_rows: list[list[str]] = [prev_ptr.copy()]                             #            O(d) initially
+# ...
+backpointer_rows.append(curr_ptr.copy())  # per row                               #            O(n·d) total across all rows
 
-| N     | time (ms) |
-| ----- | --------- |
-| 100   |           |
-| 1000  |           |
-| 5000  |           |
-| 10000 |           |
-| 15000 |           |
-| 20000 |           |
-| 25000 |           |
-| 30000 |           |
+# output buffers
+aligned1_list: list[str] = []                                                     #            O(n+m)
+aligned2_list: list[str] = []                                                     #            O(n+m)
+```
+
+Ignoring the input sequences, auxiliary memory is dominated by stored backpointer slices at **O(n·d)**, plus rolling rows **O(d)** and outputs **O(n+m)**, so total auxiliary space is **O(n·d)**. Including the input and outputs, the overall storage remains **O(n·d)**.
+
+### Empirical Data - Banded Alignment with band_width = 5
+
+| N    | Time (sec) |
+| ---- | ---------- |
+| 500  | 0.002      |
+| 1000 | 0.005      |
+| 1500 | 0.008      |
+| 2000 | 0.01       |
+| 2500 | 0.013      |
+| 3000 | 0.02       |
 
 ### Comparison of Theoretical and Empirical Results - Banded Alignment
 
-- Theoretical order of growth:
+- Theoretical order of growth: **O(nd)** where d is the band width
 - Empirical order of growth (if different from theoretical):
 
-![](fill-me-in.png)
+![img](./_analysis/align_empirical_bounded.svg)
 
-_Fill me in_
+The empirical lines up pretty well with the expected, however there are some random outliers at the end, and I'm not sure what those are or why they randomly spike so much higher for some reason.
 
 ### Relative Performance Of Unrestricted Alignment versus Banded Alignment
 
-_Fill me in_
+Just based on the empirical data tables with a band of 5, it is apparent how much faster the banded width algorithm really is. The graphs side by side show that one experiences exponential growth while the other is linear because the band width is constant.
 
 ## Stretch 1
 

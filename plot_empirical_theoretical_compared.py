@@ -48,14 +48,14 @@ def main(theoretical_big_o, coeff, theoretical_label, table_name, test_name: str
 if __name__ == '__main__':
     # Define this
     def theoretical_big_o(n):
-        return n**2
+        return n
     # Fill in from result using compute_coefficient
-    coeff_align = 3.222572996351454e-07
+    coeff_align = 5.286119514041477e-06
 
     main(
         theoretical_big_o=theoretical_big_o,
         coeff=coeff_align,
-        theoretical_label='Theoretical O(n^2) (n*m in this case)',
+        theoretical_label='Theoretical O(nd) (n in this case bc d is constant)',
         table_name="Alignment",
         test_name='align'
     )

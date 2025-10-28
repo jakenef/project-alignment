@@ -89,4 +89,5 @@ if __name__ == '__main__':
     sizes = [500, 1000, 1500, 2000, 2500, 3000]
 
     main(sizes=sizes,
-         algorithm=align)
+         algorithm=align,
+         banded_width = 5)

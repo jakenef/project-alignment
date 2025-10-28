@@ -145,7 +145,7 @@
         </header>
         <main class="main-content">
             <div class="test-summary">
-                <span>Passed: 1 / 2</span>
+                <span>Passed: 2 / 3</span>
                 <span>Total Score: 0 / 0</span>
             </div>
             
@@ -235,10 +235,51 @@
                 </div>
             </div>
             
-            <div class="test-result-failed">
+            <div class="test-result-passed">
                 <div class="content-wrapper">
                     <div class="result-header">
                         <h2>core</h2>
+                        <div class="result-subheader">
+                            <div class="status">
+                                <h2>Passed</h2>
+                            </div>
+                            <div class="score">
+                                <h2>Score:</h2> 0 / 0
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul class="test-info">
+                    
+                        
+                            <li class="pass">test_small_dna_alignment_banded — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_length_discrepancy_banded — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_alignment_changes_with_banded_width — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_medium_dna_alignment_banded — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_massive_dna_alignment_banded — Pass</li>
+                        
+                    
+                    </ul>
+                    
+                </div>
+            </div>
+            
+            <div class="test-result-failed">
+                <div class="content-wrapper">
+                    <div class="result-header">
+                        <h2>stretch2</h2>
                         <div class="result-subheader">
                             <div class="status">
                                 <h2>Failed</h2>
@@ -252,76 +293,104 @@
                     <ul class="test-info">
                     
                         
-                            <li class="fail">test_small_dna_alignment_banded — Fail</li>
+                            <li class="fail">test_small_dna_alignment_open_gap — Fail</li>
                             
-                                <pre class="failure-output">align = <function align at 0x105345080>
+                                <pre class="failure-output">align = <function align at 0x107445260>
 
-    @core
+    @stretch2
     @with_import('alignment')
-    def test_small_dna_alignment_banded(align):
-        score, aseq1, aseq2 = align('GGGGTTTTAAAACCCCTTTT', 'TTTTAAAACCCCTTTTGGGG', banded_width=2)
->       assert score == 6
-E       assert -8 == 6
+    def test_small_dna_alignment_open_gap(align):
+        score, aseq1, aseq2 = align('GGGGTTTTAAAACCCCTTTT', 'TTTTAAAACCCCTTTTGGGG', gap_open_penalty=10, indel_penalty=.5)
+>       assert score == -24
+E       assert -44.0 == -24
 
-test_alignment.py:208: AssertionError</pre>
+test_alignment.py:290: AssertionError</pre>
                             
                         
                     
                         
-                            <li class="fail">test_length_discrepancy_banded — Fail</li>
+                            <li class="fail">test_small_dna_alignment_gap_open — Fail</li>
                             
-                                <pre class="failure-output">align = <function align at 0x105345080>
+                                <pre class="failure-output">align = <function align at 0x107445260>
 
-    @core
+    @stretch2
     @with_import('alignment')
-    def test_length_discrepancy_banded(align):
-        score, aseq1, aseq2 = align('AAAA', 'AAAHHHAHHHHHHHHHHHHHHHHHH', banded_width=2)
->       assert score == math.inf
-E       assert 93 == inf
-E        +  where inf = math.inf
+    def test_small_dna_alignment_gap_open(align):
+        score, seq1, seq2 = align('tcgctcatatatccc', 'atataccctggggtg', gap_open_penalty=10, indel_penalty=.5)
+>       assert score == 7
+E       assert -17.0 == 7
 
-test_alignment.py:217: AssertionError</pre>
+test_alignment.py:299: AssertionError</pre>
                             
                         
                     
                         
-                            <li class="fail">test_alignment_changes_with_banded_width — Fail</li>
+                            <li class="fail">test_medium_dna_alignment_gap_open — Fail</li>
                             
-                                <pre class="failure-output">align = <function align at 0x105345080>
+                                <pre class="failure-output">align = <function align at 0x107445260>
 
-    @core
+    @stretch2
     @with_import('alignment')
-    def test_alignment_changes_with_banded_width(align):
-        # banded width 1
-        score_narrow, a1_narrow, a2_narrow = align('tcgctcatatatccc', 'atataccctggggtg', banded_width=1, match_award=-1,
-                                                   sub_penalty=1, indel_penalty=1)
->       assert score_narrow == 10
-E       assert 6 == 10
-
-test_alignment.py:228: AssertionError</pre>
-                            
-                        
-                    
-                        
-                            <li class="fail">test_medium_dna_alignment_banded — Fail</li>
-                            
-                                <pre class="failure-output">align = <function align at 0x105345080>
-
-    @core
-    @with_import('alignment')
-    def test_medium_dna_alignment_banded(align):
+    def test_medium_dna_alignment_gap_open(align):
         seq1 = 'ataagagtgattggcgatatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatctctttataaacggcacttcc'
         seq2 = 'ataagagtgattggcgtccgtacgtaccctttctactctcaaactcttgttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
     
-        score, aseq1, aseq2 = align(seq1, seq2, banded_width=2)
+        score, aseq1, aseq2 = align(seq1, seq2, gap_open_penalty=10, indel_penalty=.5)
     
-        expected_align1 = 'ataagagtgattggcg-atatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatctctttataaacggcacttcc--'
-        expected_align2 = 'ataagagtgattggcgtccgtacgtaccctttctactc-tcaaactcttgttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
+        expected_align1 = 'ataagagtgattggcgatatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatct---ctttataaacggcactt-----------cc'
+        expected_align2 = 'ataagagtgattgg--------cgtccgtacgtaccctttctactctcaaactctt----gttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
     
->       assert score == -79
-E       assert -116 == -79
+>       assert score == -177
+E       assert -233.0 == -177
 
-test_alignment.py:258: AssertionError</pre>
+test_alignment.py:315: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_alignment_changes_with_open_gap_penalties — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x107445260>
+
+    @stretch2
+    @with_import('alignment')
+    def test_alignment_changes_with_open_gap_penalties(align):
+        seq1 = 'ataagagtgattggcgatatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatctctttataaacggcacttcc'
+        seq2 = 'ataagagtgattggcgtccgtacgtaccctttctactctcaaactcttgttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
+    
+        score_a, seq1_a, seq2_a = align(seq1, seq2, gap_open_penalty=2, indel_penalty=.5)
+    
+        expected_align1 = 'ataagagtgattggcgatatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatct---ctttataaacggcactt---------cc--'
+        expected_align2 = 'ataagagtgattggcg---t-----ccgtacgtaccctttctactctcaaactctt----gttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
+    
+>       assert score_a == -221
+E       assert -233.0 == -221
+
+test_alignment.py:331: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_large_alignment_open_gap — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x107445260>
+
+    @stretch2
+    @with_import('alignment')
+    def test_large_alignment_open_gap(align):
+        seq1 = read_sequence(test_files / 'bovine_coronavirus.txt')[:1000]
+        seq2 = read_sequence(test_files / 'murine_hepatitus.txt')[:1000]
+    
+        score, aseq1, aseq2 = align(seq1, seq2, gap_open_penalty=10, indel_penalty=.5)
+    
+        with open(test_files / f'large_bovine_murine_open_gap_1000.txt') as file:
+            expected_score, expected_align1, expected_align2 = file.read().splitlines()
+    
+>       assert score == int(expected_score)
+E       AssertionError: assert -1904.0 == -1376
+E        +  where -1376 = int('-1376')
+
+test_alignment.py:356: AssertionError</pre>
                             
                         
                     
@@ -333,7 +402,7 @@ test_alignment.py:258: AssertionError</pre>
             
         </main>
         <footer>
-            <p>Generated by byu_pytest_utils on October 27, 2025 06:12 PM</p>
+            <p>Generated by byu_pytest_utils on October 28, 2025 05:10 PM</p>
         </footer>
     </div>
 </body>

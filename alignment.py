@@ -1,3 +1,4 @@
+from math import inf
 from typing import List
 
 def align(
@@ -32,45 +33,79 @@ def align(
     # )
 
     n = len(seq1) # rows (seq1 down the side)
-    m = len(seq2) # cols (seq2 across the top)
+    m = len(seq2) # cols (seq2 across top)
+    
+    d = max(n, m) if banded_width < 0 else banded_width
 
-    #1. Setup tables
+    if banded_width >= 0 and abs(n - m) > banded_width:
+        return inf, None, None
 
-    editCostTable = [[0]*(m+1) for _ in range(n+1)]
-    backPointerTable = [[""]*(m+1) for _ in range(n+1)]
+    #1. Setup tables (now, just two arrays for each thing we need)
+
+    prev_cost = [0] * (2 * d + 1)
+    curr_cost = [0] * (2 * d + 1)
+    prev_ptr = [""] * (2 * d + 1)
+    curr_ptr = [""] * (2 * d + 1)
+
+    # print("after init:")
+    # print("prev cost: ", prev_cost, "\ncurr_cost: ", curr_cost, "\nprev_ptr: ", prev_ptr, "\ncurr_ptr: ", curr_ptr)
     
     #2. Initialize tables with starter values
 
-    for i in range(1, n + 1):
-        editCostTable[i][0] = editCostTable[i-1][0] + indel_penalty
-        backPointerTable[i][0] = "U"
+    lo, hi = j_bounds(0, m, d)
+    for j_offset, j in enumerate(range(lo, hi + 1)):
+        prev_cost[j_offset] = j * indel_penalty
+        prev_ptr[j_offset] = "L" if j > 0 else ""
 
-    for j in range(1, m + 1):
-        editCostTable[0][j] = editCostTable[0][j - 1] + indel_penalty
-        backPointerTable[0][j] = "L"
+    # for traceback
+    backpointer_rows = [prev_ptr.copy()]
+
 
     # 3. Build matrix
 
     for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            diagonal = editCostTable[i - 1][j - 1] + (match_award if seq1[i - 1] == seq2[j - 1] else sub_penalty)
-            left = editCostTable[i][j - 1] + indel_penalty
-            up = editCostTable[i - 1][j] + indel_penalty
+        lo, hi = j_bounds(i, m, d)
+        prev_lo, prev_hi = j_bounds(i - 1, m, d)
+        for j_offset, j in enumerate(range(lo, hi + 1)):
 
-            candidates = [
-                (diagonal, 0, "D"),
-                (left, 1, "L"),
-                (up, 2, "U")
-            ]
+            candidates = []
+
+            # diagonal
+            if prev_lo <= j-1 <= prev_hi:
+                diag_idx = (j - 1) - prev_lo
+                diagonal = prev_cost[diag_idx] + (match_award if seq1[i - 1] == seq2[j - 1] else sub_penalty)
+                candidates.append((diagonal, 0, 'D'))
+
+            # left
+            if j - 1 >= lo:
+                left = curr_cost[j_offset - 1] + indel_penalty
+                candidates.append((left, 1, "L"))
+
+            # up
+            if prev_lo <= j <= prev_hi:
+                up_idx = j - prev_lo
+                up = prev_cost[up_idx] + indel_penalty
+                candidates.append((up, 2, "U"))
 
             min_cost, _, direction = min(candidates)
+            curr_cost[j_offset] = min_cost
+            curr_ptr[j_offset] = direction
 
-            editCostTable[i][j] = min_cost
-            backPointerTable[i][j] = direction
+        backpointer_rows.append(curr_ptr.copy())
 
-    score = editCostTable[n][m]
+        prev_cost, curr_cost = curr_cost, [0] * (2 * d + 1)
+        prev_ptr, curr_ptr = curr_ptr, [""] * (2 * d + 1)
+    
+    lo, hi = j_bounds(n, m, d)
+    if lo <= m <= hi:
+        score: float = prev_cost[m - lo]
+    else:
+        score = float('inf')
+
 
     # 4. Trace back to build aligned strings
+
+    #print("backpointer rows: ", backpointer_rows)
 
     i = n
     j = m 
@@ -79,12 +114,23 @@ def align(
     aligned2_list: List[str] = []
 
     while (i > 0 or j > 0):
-        if backPointerTable[i][j] == 'D':
+        lo, hi = j_bounds(i, m, d)
+        j_offset = j - lo
+
+        # print("j_offset: ", j_offset)
+
+        # Check bounds
+        if j_offset < 0 or j_offset >= len(backpointer_rows[i]):
+            break
+    
+        direction = backpointer_rows[i][j_offset]
+
+        if direction == 'D':
             aligned1_list.append(seq1[i - 1])
             aligned2_list.append(seq2[j - 1])
             i -= 1
             j -= 1
-        elif backPointerTable[i][j] == 'L':
+        elif direction == 'L':
             aligned1_list.append(gap)
             aligned2_list.append(seq2[j - 1])
             j -= 1
@@ -96,11 +142,13 @@ def align(
     aligned1 = ''.join(reversed(aligned1_list))
     aligned2 = ''.join(reversed(aligned2_list))
 
-    # printSequenceTable(editCostTable, seq1, seq2)
-    # print("-----------------------------------------------")
-    # printSequenceTable(backPointerTable, seq1, seq2)
-
     return score, aligned1, aligned2
+
+def j_bounds(i: int, m: int, d: int) -> tuple[int, int]:
+    # valid j satisfy |i - j| ≤ d, also 0 ≤ j ≤ m
+    lo = max(0, i - d)
+    hi = min(m, i + d)
+    return lo, hi
 
 def printSequenceTable(table: list[list], seq1: str, seq2: str) -> None:
     # table is assumed to be (len(seq1)+1) x (len(seq2)+1)
@@ -122,7 +170,7 @@ def printSequenceTable(table: list[list], seq1: str, seq2: str) -> None:
         print('\t'.join([str(label)] + values))
 
 if __name__ == "__main__":
-    score, aligned1, aligned2 = align("A", "C", match_award=-1, sub_penalty=5, indel_penalty=1)
+    score, aligned1, aligned2 = align("ATCTGG", "ATGGG", banded_width=2)
     print("Score:", score)
     print("Aligned 1:", aligned1)
     print("Aligned 2:", aligned2)
