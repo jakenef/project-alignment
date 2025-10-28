@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison Report</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            flex-direction: column;
+            font-family: monospace, sans-serif;
+            line-height: 1.4;
+            background-color: #f9f9f9;
+            color: rgb(0, 46, 93);
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        header, footer {
+            background-color: rgb(0, 46, 93);
+            color: white;
+            text-align: center;
+        }
+        header h1, footer p {
+            margin: 0;
+            padding: 5px 0;
+        }
+        header {
+            margin-bottom: 10px;
+        }
+        footer {
+            margin-top: 10px;
+        }
+        h2 {
+            padding: 5px 0;
+        }
+        .test-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 50px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .test-result-passed, .test-result-failed {
+            padding: 5px;
+            border-radius: 5px;
+            margin: 10px 50px;
+            position: relative;
+        }
+        .test-result-passed {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+        .test-result-failed {
+            background-color: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+        .result-header {
+            text-align: center;
+        }
+        .result-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .result-subheader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+            font-size: 1em;
+            padding: 0 10px;
+        }
+        .result-subheader .status, .result-subheader .score {
+            font-size: 1em;
+        }
+        .result-subheader .status h2, .result-subheader .score h2 {
+            display: inline;
+            font-size: 1em;
+            margin-right: 5px;
+        }
+        ul.test-info {
+            list-style-type: none;
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        ul.test-info li {
+            margin: 6px 0;
+        }
+        ul.test-info li.fail {
+            color: #721c24;
+        }
+        ul.test-info li.pass {
+            color: #155724;
+        }
+        .blocked-message {
+            margin: 10px 20px;
+            padding: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        pre.failure-output {
+            background: #fff0f0;
+            border: 1px solid #f5c6cb;
+            padding: 8px;
+            border-radius: 3px;
+            margin-top: 5px;
+            white-space: pre-wrap;
+        }
+        .comparison-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 0 10px;
+        }
+        .section {
+            flex: 1;
+            min-width: 300px;
+        }
+        .content {
+            background: rgb(245, 245, 245);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <header>
+            <h1>test_alignment Results</h1>
+        </header>
+        <main class="main-content">
+            <div class="test-summary">
+                <span>Passed: 0 / 3</span>
+                <span>Total Score: 0 / 0</span>
+            </div>
+            
+            
+            <div class="test-result-failed">
+                <div class="content-wrapper">
+                    <div class="result-header">
+                        <h2>baseline</h2>
+                        <div class="result-subheader">
+                            <div class="status">
+                                <h2>Failed</h2>
+                            </div>
+                            <div class="score">
+                                <h2>Score:</h2> 0 / 0
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul class="test-info">
+                    
+                        
+                            <li class="pass">test_small_alignment — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_tiny_dna_alignment — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_small_dna_alignment_not_banded — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_empty_sequences — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_one_empty_sequence — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_identical_sequences — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_all_mismatch_sequences — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_alignment_with_long_gaps — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_different_match_score — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_different_indel_penalty — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_different_substitution_penalty — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_medium_dna_alignment — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_large_dna_alignment — Pass</li>
+                        
+                    
+                        
+                            <li class="fail">test_tiny_dna_alignment_gaps — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x1054751c0>
+
+    @baseline
+    @with_import('alignment')
+    def test_tiny_dna_alignment_gaps(align):
+        score, aseq1, aseq2 = align('ATATATATAT', 'TATATATATA')
+        assert score == -17
+>       assert aseq1 == 'ATATATATAT-'
+E       AssertionError: assert '-ATATATATAT' == 'ATATATATAT-'
+E         - ATATATATAT-
+E         ?           -
+E         + -ATATATATAT
+E         ? +
+
+test_alignment.py:42: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_tie_breaking — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x1054751c0>
+
+    @baseline
+    @with_import('alignment')
+    def test_tie_breaking(align):
+        # generate a 3 way tie by modifying the match/sub awards
+        score_3_way_tie, aseq1, aseq2 = align('ABDE', 'BADE', match_award=-2, sub_penalty=4, indel_penalty=5)
+        assert aseq1 == 'ABDE'
+        assert aseq2 == 'BADE'
+        assert score_3_way_tie == 4
+    
+        score_diag_left_tie, bseq1, bseq2 = align('AA', 'A')
+        assert score_diag_left_tie == 2
+        assert bseq1 == 'AA'
+        assert bseq2 == '-A'
+    
+        # generate another 2 way tie between left and up
+        score_left_top_tie, cseq1, cseq2 = align('AT', 'AG', sub_penalty=15)
+        assert score_left_top_tie == 7
+>       assert cseq1 == 'AT-'
+E       AssertionError: assert 'A-T' == 'AT-'
+E         - AT-
+E         + A-T
+
+test_alignment.py:143: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_alignment_scoring_effects — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x1054751c0>
+
+    @baseline
+    @with_import('alignment')
+    def test_alignment_scoring_effects(align):
+        # alignment with default parameters
+        score_default, aseq1_default, aseq2_default = align('AAAA', 'CCCC')
+    
+        # alignment with different scoring
+        score_diff_scoring, aseq1_diff_scoring, aseq2_diff_scoring = align(
+            'AAAA', 'CCCC', match_award=-1, indel_penalty=1, sub_penalty=5
+        )
+    
+        assert aseq1_default == 'AAAA' and aseq2_default == 'CCCC'
+        assert score_default == 4
+    
+>       assert aseq1_diff_scoring == 'AAAA----' and aseq2_diff_scoring == '----CCCC'
+E       AssertionError: assert ('----AAAA' == 'AAAA----'
+E         - AAAA----
+E         + ----AAAA)
+
+test_alignment.py:161: AssertionError</pre>
+                            
+                        
+                    
+                    </ul>
+                    
+                </div>
+            </div>
+            
+            <div class="test-result-failed">
+                <div class="content-wrapper">
+                    <div class="result-header">
+                        <h2>core</h2>
+                        <div class="result-subheader">
+                            <div class="status">
+                                <h2>Failed</h2>
+                            </div>
+                            <div class="score">
+                                <h2>Score:</h2> 0 / 0
+                            </div>
+                        </div>
+                    </div>
+                    
+                        <div class="blocked-message">Tests for this tier will run when all prerequisite tiers have passed.</div>
+                    
+                </div>
+            </div>
+            
+            <div class="test-result-failed">
+                <div class="content-wrapper">
+                    <div class="result-header">
+                        <h2>stretch2</h2>
+                        <div class="result-subheader">
+                            <div class="status">
+                                <h2>Failed</h2>
+                            </div>
+                            <div class="score">
+                                <h2>Score:</h2> 0 / 0
+                            </div>
+                        </div>
+                    </div>
+                    
+                        <div class="blocked-message">Tests for this tier will run when all prerequisite tiers have passed.</div>
+                    
+                </div>
+            </div>
+            
+            
+        </main>
+        <footer>
+            <p>Generated by byu_pytest_utils on October 27, 2025 05:35 PM</p>
+        </footer>
+    </div>
+</body>
+</html>
