@@ -1,3 +1,5 @@
+from typing import List
+
 def align(
         seq1: str,
         seq2: str,
@@ -22,20 +24,19 @@ def align(
         :param gap: the character to use to represent gaps in the alignment strings
     """
 
-    print(
-        f"align params -> seq1={seq1!r}, seq2={seq2!r}, "
-        f"match_award={match_award}, indel_penalty={indel_penalty}, "
-        f"sub_penalty={sub_penalty}, banded_width={banded_width}, "
-        f"gap_open_penalty={gap_open_penalty}, gap={gap!r}"
-    )
+    # print(
+    #     f"align params -> seq1={seq1!r}, seq2={seq2!r}, "
+    #     f"match_award={match_award}, indel_penalty={indel_penalty}, "
+    #     f"sub_penalty={sub_penalty}, banded_width={banded_width}, "
+    #     f"gap_open_penalty={gap_open_penalty}, gap={gap!r}"
+    # )
 
-    n = len(seq2) # rows
-    m = len(seq1) # cols
+    n = len(seq1) # rows (seq1 down the side)
+    m = len(seq2) # cols (seq2 across the top)
 
     #1. Setup tables
 
     editCostTable = [[0]*(m+1) for _ in range(n+1)]
-
     backPointerTable = [[""]*(m+1) for _ in range(n+1)]
     
     #2. Initialize tables with starter values
@@ -52,7 +53,7 @@ def align(
 
     for i in range(1, n + 1):
         for j in range(1, m + 1):
-            diagonal = editCostTable[i - 1][j - 1] + (match_award if seq2[i - 1] == seq1[j - 1] else sub_penalty)
+            diagonal = editCostTable[i - 1][j - 1] + (match_award if seq1[i - 1] == seq2[j - 1] else sub_penalty)
             left = editCostTable[i][j - 1] + indel_penalty
             up = editCostTable[i - 1][j] + indel_penalty
 
@@ -74,29 +75,30 @@ def align(
     i = n
     j = m 
 
-    aligned1 = ""
-    aligned2 = ""
+    aligned1_list: List[str] = []
+    aligned2_list: List[str] = []
 
     while (i > 0 or j > 0):
         if backPointerTable[i][j] == 'D':
-            aligned1 = seq1[j - 1] + aligned1
-            aligned2 = seq2[i - 1] + aligned2
+            aligned1_list.append(seq1[i - 1])
+            aligned2_list.append(seq2[j - 1])
             i -= 1
             j -= 1
         elif backPointerTable[i][j] == 'L':
-            aligned1 = seq1[j - 1] + aligned1
-            aligned2 = gap + aligned2
+            aligned1_list.append(gap)
+            aligned2_list.append(seq2[j - 1])
             j -= 1
         else: # == "U"
-            aligned1 = gap + aligned1
-            aligned2 = seq2[i - 1] + aligned2
+            aligned1_list.append(seq1[i - 1])
+            aligned2_list.append(gap)
             i -= 1
+    
+    aligned1 = ''.join(reversed(aligned1_list))
+    aligned2 = ''.join(reversed(aligned2_list))
 
-    printSequenceTable(editCostTable, seq1, seq2)
-    print("-----------------------------------------------")
-    printSequenceTable(backPointerTable, seq1, seq2)
-
-
+    # printSequenceTable(editCostTable, seq1, seq2)
+    # print("-----------------------------------------------")
+    # printSequenceTable(backPointerTable, seq1, seq2)
 
     return score, aligned1, aligned2
 
@@ -109,13 +111,13 @@ def printSequenceTable(table: list[list], seq1: str, seq2: str) -> None:
     rows = len(table)
     cols = len(table[0])
 
-    # first row: "-" followed by seq1 characters
-    header = [' '] + ['-'] + list(seq1)
+    # first row: "-" followed by seq2 characters
+    header = [' '] + ['-'] + list(seq2)
     print('\t'.join(str(x) for x in header))
 
     # subsequent rows: first column is "-" then seq1 characters, then table values
     for i in range(rows):
-        label = '-' if i == 0 else seq2[i - 1]
+        label = '-' if i == 0 else seq1[i - 1]
         values = [str(table[i][j]) for j in range(cols)]
         print('\t'.join([str(label)] + values))
 

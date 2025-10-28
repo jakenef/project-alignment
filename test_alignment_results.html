@@ -145,18 +145,18 @@
         </header>
         <main class="main-content">
             <div class="test-summary">
-                <span>Passed: 0 / 3</span>
+                <span>Passed: 1 / 2</span>
                 <span>Total Score: 0 / 0</span>
             </div>
             
             
-            <div class="test-result-failed">
+            <div class="test-result-passed">
                 <div class="content-wrapper">
                     <div class="result-header">
                         <h2>baseline</h2>
                         <div class="result-subheader">
                             <div class="status">
-                                <h2>Failed</h2>
+                                <h2>Passed</h2>
                             </div>
                             <div class="score">
                                 <h2>Score:</h2> 0 / 0
@@ -172,6 +172,10 @@
                     
                         
                             <li class="pass">test_tiny_dna_alignment — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_tiny_dna_alignment_gaps — Pass</li>
                         
                     
                         
@@ -211,91 +215,19 @@
                         
                     
                         
+                            <li class="pass">test_tie_breaking — Pass</li>
+                        
+                    
+                        
+                            <li class="pass">test_alignment_scoring_effects — Pass</li>
+                        
+                    
+                        
                             <li class="pass">test_medium_dna_alignment — Pass</li>
                         
                     
                         
                             <li class="pass">test_large_dna_alignment — Pass</li>
-                        
-                    
-                        
-                            <li class="fail">test_tiny_dna_alignment_gaps — Fail</li>
-                            
-                                <pre class="failure-output">align = <function align at 0x1054751c0>
-
-    @baseline
-    @with_import('alignment')
-    def test_tiny_dna_alignment_gaps(align):
-        score, aseq1, aseq2 = align('ATATATATAT', 'TATATATATA')
-        assert score == -17
->       assert aseq1 == 'ATATATATAT-'
-E       AssertionError: assert '-ATATATATAT' == 'ATATATATAT-'
-E         - ATATATATAT-
-E         ?           -
-E         + -ATATATATAT
-E         ? +
-
-test_alignment.py:42: AssertionError</pre>
-                            
-                        
-                    
-                        
-                            <li class="fail">test_tie_breaking — Fail</li>
-                            
-                                <pre class="failure-output">align = <function align at 0x1054751c0>
-
-    @baseline
-    @with_import('alignment')
-    def test_tie_breaking(align):
-        # generate a 3 way tie by modifying the match/sub awards
-        score_3_way_tie, aseq1, aseq2 = align('ABDE', 'BADE', match_award=-2, sub_penalty=4, indel_penalty=5)
-        assert aseq1 == 'ABDE'
-        assert aseq2 == 'BADE'
-        assert score_3_way_tie == 4
-    
-        score_diag_left_tie, bseq1, bseq2 = align('AA', 'A')
-        assert score_diag_left_tie == 2
-        assert bseq1 == 'AA'
-        assert bseq2 == '-A'
-    
-        # generate another 2 way tie between left and up
-        score_left_top_tie, cseq1, cseq2 = align('AT', 'AG', sub_penalty=15)
-        assert score_left_top_tie == 7
->       assert cseq1 == 'AT-'
-E       AssertionError: assert 'A-T' == 'AT-'
-E         - AT-
-E         + A-T
-
-test_alignment.py:143: AssertionError</pre>
-                            
-                        
-                    
-                        
-                            <li class="fail">test_alignment_scoring_effects — Fail</li>
-                            
-                                <pre class="failure-output">align = <function align at 0x1054751c0>
-
-    @baseline
-    @with_import('alignment')
-    def test_alignment_scoring_effects(align):
-        # alignment with default parameters
-        score_default, aseq1_default, aseq2_default = align('AAAA', 'CCCC')
-    
-        # alignment with different scoring
-        score_diff_scoring, aseq1_diff_scoring, aseq2_diff_scoring = align(
-            'AAAA', 'CCCC', match_award=-1, indel_penalty=1, sub_penalty=5
-        )
-    
-        assert aseq1_default == 'AAAA' and aseq2_default == 'CCCC'
-        assert score_default == 4
-    
->       assert aseq1_diff_scoring == 'AAAA----' and aseq2_diff_scoring == '----CCCC'
-E       AssertionError: assert ('----AAAA' == 'AAAA----'
-E         - AAAA----
-E         + ----AAAA)
-
-test_alignment.py:161: AssertionError</pre>
-                            
                         
                     
                     </ul>
@@ -317,26 +249,83 @@ test_alignment.py:161: AssertionError</pre>
                         </div>
                     </div>
                     
-                        <div class="blocked-message">Tests for this tier will run when all prerequisite tiers have passed.</div>
+                    <ul class="test-info">
                     
-                </div>
-            </div>
-            
-            <div class="test-result-failed">
-                <div class="content-wrapper">
-                    <div class="result-header">
-                        <h2>stretch2</h2>
-                        <div class="result-subheader">
-                            <div class="status">
-                                <h2>Failed</h2>
-                            </div>
-                            <div class="score">
-                                <h2>Score:</h2> 0 / 0
-                            </div>
-                        </div>
-                    </div>
+                        
+                            <li class="fail">test_small_dna_alignment_banded — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x105345080>
+
+    @core
+    @with_import('alignment')
+    def test_small_dna_alignment_banded(align):
+        score, aseq1, aseq2 = align('GGGGTTTTAAAACCCCTTTT', 'TTTTAAAACCCCTTTTGGGG', banded_width=2)
+>       assert score == 6
+E       assert -8 == 6
+
+test_alignment.py:208: AssertionError</pre>
+                            
+                        
                     
-                        <div class="blocked-message">Tests for this tier will run when all prerequisite tiers have passed.</div>
+                        
+                            <li class="fail">test_length_discrepancy_banded — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x105345080>
+
+    @core
+    @with_import('alignment')
+    def test_length_discrepancy_banded(align):
+        score, aseq1, aseq2 = align('AAAA', 'AAAHHHAHHHHHHHHHHHHHHHHHH', banded_width=2)
+>       assert score == math.inf
+E       assert 93 == inf
+E        +  where inf = math.inf
+
+test_alignment.py:217: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_alignment_changes_with_banded_width — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x105345080>
+
+    @core
+    @with_import('alignment')
+    def test_alignment_changes_with_banded_width(align):
+        # banded width 1
+        score_narrow, a1_narrow, a2_narrow = align('tcgctcatatatccc', 'atataccctggggtg', banded_width=1, match_award=-1,
+                                                   sub_penalty=1, indel_penalty=1)
+>       assert score_narrow == 10
+E       assert 6 == 10
+
+test_alignment.py:228: AssertionError</pre>
+                            
+                        
+                    
+                        
+                            <li class="fail">test_medium_dna_alignment_banded — Fail</li>
+                            
+                                <pre class="failure-output">align = <function align at 0x105345080>
+
+    @core
+    @with_import('alignment')
+    def test_medium_dna_alignment_banded(align):
+        seq1 = 'ataagagtgattggcgatatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatctctttataaacggcacttcc'
+        seq2 = 'ataagagtgattggcgtccgtacgtaccctttctactctcaaactcttgttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
+    
+        score, aseq1, aseq2 = align(seq1, seq2, banded_width=2)
+    
+        expected_align1 = 'ataagagtgattggcg-atatcggctccgtacgtaccctttctactctcgggctcttccccgttagtttaaatctaatctctttataaacggcacttcc--'
+        expected_align2 = 'ataagagtgattggcgtccgtacgtaccctttctactc-tcaaactcttgttagtttaaatctaatctaaactttataaacggcacttcctgtgtgtccat'
+    
+>       assert score == -79
+E       assert -116 == -79
+
+test_alignment.py:258: AssertionError</pre>
+                            
+                        
+                    
+                    </ul>
                     
                 </div>
             </div>
@@ -344,7 +333,7 @@ test_alignment.py:161: AssertionError</pre>
             
         </main>
         <footer>
-            <p>Generated by byu_pytest_utils on October 27, 2025 05:35 PM</p>
+            <p>Generated by byu_pytest_utils on October 27, 2025 06:12 PM</p>
         </footer>
     </div>
 </body>
