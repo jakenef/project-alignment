@@ -343,33 +343,64 @@ Best match: Rat (Rattus norvegicus) (score -4343)
 
 ### Design Experience
 
-_Fill me in_
+I worked with Brandon Monson and Porter Schollenberger to extend our aligner with affine gap penalties. We designed a simpler version with just keeping track of the last backpointer_mode with transitions that add `gap_open_penalty` when entering a gap state and only `indel_penalty` when extending. We kept full traceback by storing one backpointer per cell per matrix and verified the recurrences by hand on short strings before tuning parameters.
 
 ### Empirical Data - Using Affine Penalties
 
-| N    | time (ms) |
-| ---- | --------- |
-| 500  |           |
-| 1000 |           |
-| 1500 |           |
-| 2000 |           |
-| 2500 |           |
-| 3000 |           |
+| N    | Time (sec) |
+| ---- | ---------- |
+| 500  | 0.003      |
+| 1000 | 0.006      |
+| 1500 | 0.008      |
+| 2000 | 0.011      |
+| 2500 | 0.014      |
+| 3000 | 0.017      |
 
 ### Empirical Outcome Comparisons
 
-_Fill me in_
+It looks like the affine gap didn't make too much of a performance difference compared to the Core implementation.
 
 ### Alignment Outcome Comparisons
 
 ##### Sequences and Alignments
 
-_Fill me in_
+Sequences:
+
+```
+S1 = "I like cheese."
+S2 = "I like tacos."
+```
+
+Original (linear gap): `(-3, 1, 5, 0, -1)`
+
+```
+I like --cheese.
+I like taco--s-.
+```
+
+Affine gaps: `(-3, 1, 5, 8, -1)`
+
+```
+I like cheese-----.
+I like ------tacos.
+```
+
+Affine penalties prefer a contiguous deletion of _cheese_ and insertion of _tacos_, which better reflects a single replace operation instead of many micro-edits.
 
 ##### Chosen Parameters and Better Alignments Discussion
 
-_Fill me in_
+We started with moderate mismatch and gap-extend penalties (`sub_penalty=1`, `indel_penalty=5`) and increased `gap_open_penalty` (6–8) until long, contiguous gaps were preferred over multiple short gaps without overwhelming real substitutions. Banded width remained unrestricted here (`-1`) to focus on gap behavior.
 
 ## Project Review
 
-_Fill me in_
+I met with Brandon Monson and Porter Schollenberger to review the entire alignment project, including the unrestricted, banded, and affine-penalty implementations. We compared our algorithmic designs, runtime behaviors, and output alignments across all versions.
+
+For the unrestricted alignment, our approaches were nearly identical—each of us used a full dynamic programming table with separate backpointers for simplicity and correctness. Porter used a similar setup but formatted his output matrices for easy debugging, which was helpful for verifying edge cases.
+
+In the banded alignment phase, we discussed how limiting the DP table to a diagonal band reduced runtime and memory use substantially for similar-length sequences. Porter implemented flexible bounds checking, which avoided index errors near the matrix edges. Brandon and I both used rolling arrays to manage memory efficiently, confirming that the theoretical **O(n·d)** time and space results matched empirical timing.
+
+For Stretch 2 (affine penalties), Porter implemented the three matrix model but Brandon and I tried our own methods but with slightly different parameter choices.
+
+We compared output alignments on DNA and text samples. We also all decided the rat was the culprit for stretch 1.
+
+Overall, our collaboration helped confirm that each variant—unrestricted, banded, and affine—behaved as expected both theoretically and empirically. We agreed that the affine model produced the most realistic alignments, though the banded algorithm remains best for performance on long, near-similar sequences.

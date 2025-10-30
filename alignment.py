@@ -59,6 +59,7 @@ def align(
 
     # for traceback
     backpointer_rows = [prev_ptr.copy()]
+    backpointer_mode = "M"
 
 
     # 3. Build matrix
@@ -72,20 +73,23 @@ def align(
 
             # diagonal
             if prev_lo <= j-1 <= prev_hi:
+                backpointer_mode = "M"
                 diag_idx = (j - 1) - prev_lo
                 diagonal = prev_cost[diag_idx] + (match_award if seq1[i - 1] == seq2[j - 1] else sub_penalty)
                 candidates.append((diagonal, 0, 'D'))
 
             # left
             if j - 1 >= lo:
-                left = curr_cost[j_offset - 1] + indel_penalty
+                left = curr_cost[j_offset - 1] + indel_penalty + (gap_open_penalty if backpointer_mode != "L" else 0)
                 candidates.append((left, 1, "L"))
+                backpointer_mode = "L"
 
             # up
             if prev_lo <= j <= prev_hi:
                 up_idx = j - prev_lo
-                up = prev_cost[up_idx] + indel_penalty
+                up = prev_cost[up_idx] + indel_penalty + (gap_open_penalty if backpointer_mode != "U" else 0)
                 candidates.append((up, 2, "U"))
+                backpointer_mode = "U"
 
             min_cost, _, direction = min(candidates)
             curr_cost[j_offset] = min_cost
